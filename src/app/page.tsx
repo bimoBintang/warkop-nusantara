@@ -1,103 +1,120 @@
+import { MenuItem } from "@/components/menuItem";
+import { ChevronDown, Clock, Coffee, MapPin } from "lucide-react";
 import Image from "next/image";
+import {prisma }from "@/lib/prisma"
 
-export default function Home() {
+export default async function Home() {
+
+  const product = await prisma.product.findMany({
+    select: {
+      image: true,
+      name: true,
+      price: true,
+      desc: true
+    }
+  });
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main>
+      <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-900/80 to-amber-800/60 z-10"></div>
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')`
+          }}
+        ></div>
+        
+        <div className="relative z-20 text-center text-white px-4 max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+            Warkop <span className="text-amber-300">Nusantara</span>
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 opacity-90">
+            Nikmati cita rasa kopi tradisional Indonesia dengan suasana hangat dan ramah
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-full font-semibold transition-colors transform hover:scale-105">
+              Lihat Menu
+            </button>
+            <button className="border-2 border-white text-white hover:bg-white hover:text-amber-900 px-8 py-3 rounded-full font-semibold transition-all transform hover:scale-105">
+              Tentang Kami
+            </button>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+          <ChevronDown className="h-8 w-8 text-white animate-bounce" />
+        </div>
+      </section>
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6 rounded-lg bg-amber-50 hover:shadow-lg transition-shadow">
+              <Coffee className="h-16 w-16 text-amber-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">Kopi Premium</h3>
+              <p className="text-gray-600">Biji kopi pilihan dari berbagai daerah di Indonesia</p>
+            </div>
+            <div className="text-center p-6 rounded-lg bg-amber-50 hover:shadow-lg transition-shadow">
+              <Clock className="h-16 w-16 text-amber-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">Buka 24 Jam</h3>
+              <p className="text-gray-600">Melayani Anda kapan saja, setiap hari</p>
+            </div>
+            <div className="text-center p-6 rounded-lg bg-amber-50 hover:shadow-lg transition-shadow">
+              <MapPin className="h-16 w-16 text-amber-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">Lokasi Strategis</h3>
+              <p className="text-gray-600">Mudah dijangkau dari berbagai arah</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <MenuItem menuItems={product} />
+
+      <section id="about" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold text-amber-900 mb-6">Tentang Warkop Nusantara</h2>
+              <p className="text-gray-600 mb-6 text-lg leading-relaxed">
+                Sejak tahun 1995, Warkop Nusantara telah menjadi tempat berkumpul favorit masyarakat. 
+                Kami bangga menyajikan kopi tradisional Indonesia dengan cita rasa yang autentik dan 
+                suasana yang hangat dan bersahabat.
+              </p>
+              <p className="text-gray-600 mb-8 text-lg leading-relaxed">
+                Dengan menggunakan biji kopi pilihan dari berbagai daerah di Indonesia, kami berkomitmen 
+                untuk memberikan pengalaman minum kopi terbaik bagi setiap pelanggan.
+              </p>
+              <div className="flex items-center space-x-4">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-amber-600">28+</div>
+                  <div className="text-gray-600">Tahun Berpengalaman</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-amber-600">50K+</div>
+                  <div className="text-gray-600">Pelanggan Puas</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-amber-600">15+</div>
+                  <div className="text-gray-600">Varian Menu</div>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="rounded-lg overflow-hidden shadow-2xl">
+                <Image 
+                  src="https://images.unsplash.com/photo-1442512595331-e89e73853f31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                  alt="Interior Warkop" 
+                  className="w-full h-96 object-cover"
+                  width={250}
+                  height={250}
+                />
+              </div>
+              <div className="absolute -bottom-6 -right-6 bg-amber-600 text-white p-6 rounded-lg shadow-lg">
+                <div className="text-2xl font-bold">★ 4.8</div>
+                <div className="text-sm">Rating Pelanggan</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
