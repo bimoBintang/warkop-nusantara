@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     return NextResponse.json(
-      { error: 'Terjadi kesalahan server' },
+      { message: 'Terjadi kesalahan server', error },
       { status: 500 }
     );
   }

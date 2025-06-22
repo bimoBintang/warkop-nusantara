@@ -37,6 +37,3 @@ export default function Sidebar({navigation}:NavigationItem) {
   )
 }
 
-function getUser(id: any) {
-  throw new Error('Function not implemented.')
-}
