@@ -13,6 +13,15 @@ const nextConfig: NextConfig = {
       }
     ]
   },
+  eslint: {
+    // Ignore ESLint errors during build for generated files
+    ignoreDuringBuilds: false,
+    dirs: ['src', 'pages', 'components', 'lib', 'utils'], // Only lint these directories
+  },
+  typescript: {
+    // Ignore TypeScript errors during build (use with caution)
+    ignoreBuildErrors: false,
+  },
 };
 
 export default nextConfig;
