@@ -14,15 +14,14 @@ async function getProduct(productId: string) {
   return product
 }
 
-interface PageProps {
-  params: {
-    adminId: string
-    productId: string
-  }
-}
 
-export default async function EditProductPage({ params }: PageProps) {
-  const product = await getProduct(params.productId)
+
+export default async function EditProductPage({
+  params: { productId }
+}: {
+  params: { productId: string }
+}) {
+  const product = await getProduct(productId)
 
   return (
     <div>
