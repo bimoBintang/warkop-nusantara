@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "../components/common/header";
-import { Footer } from "@/components/common/footer";
+import LayoutClient from "@/components/layoutClient";
+import { CartButton } from "@/components/cartButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Warkop Nusantara - Kopi Asli Indonesia',
-  description: 'Nikmati cita rasa kopi tradisional Indonesia dengan suasana hangat dan ramah',
+  title: 'Warkop bangboy - Kopi Asli',
+  description: 'Nikmati cita rasa kopi tradisional dengan suasana hangat dan ramah',
 };
 
 export default function RootLayout({
@@ -24,14 +24,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header />
-        {children}
-        <Footer />
+        <LayoutClient>
+          {children}
+          
+        </LayoutClient>
       </body>
     </html>
   );

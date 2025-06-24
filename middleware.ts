@@ -6,26 +6,36 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')?.value;
   const { pathname } = request.nextUrl;
 
-  // Protected routes
+  let response = NextResponse.next();
+
+  const hideLayoutRoutes = ['/auth/login', '/dashboard'];
+  const shouldHideLayout = hideLayoutRoutes.some(route => pathname.startsWith(route));
+
+  if (shouldHideLayout) {
+    response.cookies.set('hide-layout', 'true', { path: '/' });
+  } else {
+    response.cookies.set('hide-layout', 'false', { path: '/' });
+  }
+
   const protectedRoutes = ['/dashboard', '/profile'];
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
-  if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  const tokenIsValid = token && verifyToken(token);
+
+  if (isProtectedRoute && !tokenIsValid) {
+    const redirect = NextResponse.redirect(new URL('/auth/login', request.url));
+    redirect.cookies.delete('auth-token');
+    redirect.cookies.set('hide-layout', 'true', { path: '/' });
+    return redirect;
   }
 
-  if (token && !verifyToken(token) && isProtectedRoute) {
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete('auth-token');
-    return response;
-  }
+  const isAuthPage = pathname === '/auth/login';
 
-  // Redirect authenticated users away from auth pages
-  if (token && verifyToken(token) && (pathname === '/login' || pathname === '/register')) {
+  if (tokenIsValid && isAuthPage) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

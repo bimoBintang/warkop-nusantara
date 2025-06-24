@@ -2,6 +2,8 @@ import { MenuItem } from "@/components/menuItem";
 import { ChevronDown, Clock, Coffee, MapPin } from "lucide-react";
 import Image from "next/image";
 import {prisma }from "@/lib/prisma"
+import { CartProvider } from "@/components/cartContext";
+import { CartButton } from "@/components/cartButton";
 
 export default async function Home() {
 
@@ -66,8 +68,11 @@ export default async function Home() {
           </div>
         </div>
       </section>
-      <MenuItem menuItems={product} />
 
+      <CartProvider>
+        <MenuItem menuItems={product} />
+        <CartButton />
+      </CartProvider>
       <section id="about" className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

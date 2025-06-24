@@ -54,3 +54,23 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  const url = new URL(req.url);
+  const productId = url.pathname.split("/").pop();
+
+  if (!productId) {
+    return NextResponse.json({ message: "Product ID not found" }, { status: 400 });
+  }
+
+  try {
+    await prisma.product.delete({
+      where: { id: productId },
+    });
+
+    return NextResponse.json({ message: "Product deleted successfully" }, { status: 200 });
+  } catch (error) {
+    console.error("Failed to delete product:", error);
+    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
+  }
+}

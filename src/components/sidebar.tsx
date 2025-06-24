@@ -17,7 +17,7 @@ export default function Sidebar({navigation}:NavigationItem) {
   return (
     <div className="w-64 bg-gray-900 text-white">
       <div className="p-6">
-        <h1 className="text-xl font-bold">☕ Coffee Shop</h1>
+        <h1 className="text-xl font-bold">Warkop Bangboy</h1>
       </div>
       <nav className="mt-6">
         {navigation.map((item) => (

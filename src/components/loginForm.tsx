@@ -62,11 +62,6 @@ export const LoginForm = ()=> {
               {loading ? 'Memproses...' : 'Masuk'}
             </button>
           </div>
-          <div className="text-center">
-            <Link href="/register" className="text-blue-600 hover:text-blue-500">
-              Belum punya akun? Daftar di sini
-            </Link>
-          </div>
         </form>
     )
 }

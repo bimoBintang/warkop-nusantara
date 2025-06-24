@@ -28,7 +28,7 @@ export default async function ProductsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Products</h1>
         <Button asChild>
-          <Link href="/dashboard/products/create">Add Product</Link>
+          <Link href={`/dashboard/${users[0].id}/products/create`}>Add Product</Link>
         </Button>
       </div>
 
