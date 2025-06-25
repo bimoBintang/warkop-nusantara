@@ -55,7 +55,7 @@ export default async function ProductsPage() {
                 <tbody>
                   {products.map((product) => (
                     <tr key={product.id} className="border-b hover:bg-gray-50">
-                      <td className="p-3 font-medium"><Image src={product.image || ''} alt={product.name} width={100} height={100} /></td>
+                      <td className="p-3 font-medium"><Image src={`/uploads/${product.image}` || ''} alt={product.name} width={100} height={100} /></td>
                       <td className="p-3 font-medium">{product.name}</td>
                       <td className="p-3">{formatCurrency(product.price)}</td>
                       <td className="p-3">{product.desc || '-'}</td>

@@ -60,7 +60,7 @@ export const MenuItem = ({ menuItems }: MenuItemProps) => {
                 {item.image ? (
                   <Image
                     className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-                    src={item.image}
+                    src={`/uploads/${item.image}`}
                     alt={item.name ?? "Menu item"}
                     width={400}
                     height={192}
