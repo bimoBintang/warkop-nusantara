@@ -66,7 +66,7 @@ export default async function Home() {
               <p className="text-gray-600">Mudah dijangkau dari berbagai arah</p>
             </div>
           </div>
-        </div>
+        </div>  
       </section>
         <MenuItem menuItems={product} />
         <CartButton />
