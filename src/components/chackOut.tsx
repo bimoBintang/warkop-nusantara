@@ -48,8 +48,9 @@ export default function Checkout() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       clearCart();
       router.push("/order-success");
-    } catch (error) {
+    } catch (error) { 
       alert("Terjadi kesalahan. Silakan coba lagi.");
+      console.log("Terjadi kesalahan. Silakan coba lagi.", error)
     } finally {
       setIsSubmitting(false);
     }
