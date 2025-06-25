@@ -6,12 +6,12 @@ import { useCart } from "@/components/cartContext";
 import { formatCurrency } from "@/lib/utils";
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from "lucide-react";
 import Image from "next/image";
+import React from "react";
 
 export default function Checkout() {
   const router = useRouter();
   const { cartItems, updateQuantity, removeFromCart, getTotalPrice, clearCart } = useCart();
-  
-  // Form state
+
   const [customerInfo, setCustomerInfo] = useState({
     name: "",
     phone: "",
@@ -19,28 +19,24 @@ export default function Checkout() {
     address: "",
     notes: ""
   });
-  
+
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Delivery fee
   const deliveryFee = 5000;
   const subtotal = getTotalPrice();
   const total = subtotal + deliveryFee;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setCustomerInfo(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setCustomerInfo(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleQuantityChange = (productName: string, newQuantity: number) => {
-    if (newQuantity < 1) {
-      removeFromCart(productName);
+  const handleQuantityChange = (productId: string, quantity: number) => {
+    if (quantity < 1) {
+      removeFromCart(productId);
     } else {
-      updateQuantity(productName, newQuantity);
+      updateQuantity(productId, quantity);
     }
   };
 
@@ -48,14 +44,10 @@ export default function Checkout() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Success - clear cart and redirect
       clearCart();
-      alert("Pesanan berhasil dibuat! Kami akan menghubungi Anda segera.");
-      router.push("/");
+      router.push("/order-success");
     } catch (error) {
       alert("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
@@ -83,7 +75,6 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
@@ -106,8 +97,8 @@ export default function Checkout() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-bold text-amber-900 mb-4">Pesanan Anda</h2>
               <div className="space-y-4">
-                {cartItems.map((item, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
                     <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg overflow-hidden">
                       {item.image ? (
                         <Image
@@ -123,32 +114,35 @@ export default function Checkout() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-800">{item.name}</h3>
                       <p className="text-sm text-gray-600">{formatCurrency(item.price)}</p>
+                      {item.desc && (
+                        <p className="text-xs text-gray-500 mt-1">{item.desc}</p>
+                      )}
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleQuantityChange(item.name, item.quantity - 1)}
+                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                         className="p-1 hover:bg-gray-100 rounded"
                       >
                         <Minus size={16} />
                       </button>
                       <span className="w-8 text-center font-medium">{item.quantity}</span>
                       <button
-                        onClick={() => handleQuantityChange(item.name, item.quantity + 1)}
+                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                         className="p-1 hover:bg-gray-100 rounded"
                       >
                         <Plus size={16} />
                       </button>
                     </div>
-                    
+
                     <div className="text-right">
                       <p className="font-semibold">{formatCurrency(item.price * item.quantity)}</p>
                       <button
-                        onClick={() => removeFromCart(item.name)}
+                        onClick={() => removeFromCart(item.id)}
                         className="text-red-500 hover:text-red-700 mt-1"
                       >
                         <Trash2 size={16} />
@@ -178,7 +172,6 @@ export default function Checkout() {
                       placeholder="Masukkan nama lengkap"
                     />
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Nomor Telepon *
@@ -194,11 +187,9 @@ export default function Checkout() {
                     />
                   </div>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
                     type="email"
                     name="email"
@@ -208,11 +199,9 @@ export default function Checkout() {
                     placeholder="email@example.com"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Alamat Lengkap *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap *</label>
                   <textarea
                     name="address"
                     value={customerInfo.address}
@@ -220,32 +209,29 @@ export default function Checkout() {
                     required
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="Masukkan alamat lengkap untuk pengiriman"
+                    placeholder="Masukkan alamat lengkap"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Catatan Tambahan
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Tambahan</label>
                   <textarea
                     name="notes"
                     value={customerInfo.notes}
                     onChange={handleInputChange}
                     rows={2}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="Instruksi khusus atau catatan untuk pesanan"
+                    placeholder="Contoh: Jangan ketuk pintu, hubungi saat sampai"
                   />
                 </div>
               </form>
             </div>
           </div>
 
-          {/* Order Summary */}
+          {/* Ringkasan Pesanan */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
               <h2 className="text-xl font-bold text-amber-900 mb-4">Ringkasan Pesanan</h2>
-              
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between">
                   <span>Subtotal ({cartItems.length} item)</span>
@@ -262,43 +248,27 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Payment Method */}
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-800 mb-3">Metode Pembayaran</h3>
                 <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="cash"
-                      checked={paymentMethod === "cash"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="mr-2"
-                    />
-                    <span>Bayar di Tempat (COD)</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="transfer"
-                      checked={paymentMethod === "transfer"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="mr-2"
-                    />
-                    <span>Transfer Bank</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="ewallet"
-                      checked={paymentMethod === "ewallet"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="mr-2"
-                    />
-                    <span>E-Wallet (OVO/GoPay/DANA)</span>
-                  </label>
+                  {["cash", "transfer", "ewallet"].map((method) => (
+                    <label key={method} className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value={method}
+                        checked={paymentMethod === method}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                      />
+                      <span>
+                        {{
+                          cash: "Bayar di Tempat (COD)",
+                          transfer: "Transfer Bank",
+                          ewallet: "E-Wallet (OVO/GoPay/DANA)"
+                        }[method]}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
@@ -309,7 +279,7 @@ export default function Checkout() {
               >
                 {isSubmitting ? "Memproses..." : `Pesan Sekarang - ${formatCurrency(total)}`}
               </button>
-              
+
               <p className="text-xs text-gray-500 mt-2 text-center">
                 Dengan memesan, Anda menyetujui syarat dan ketentuan kami
               </p>
