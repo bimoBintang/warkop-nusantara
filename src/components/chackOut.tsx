@@ -8,20 +8,62 @@ import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
-export default function Checkout() {
+// Types untuk data order berdasarkan schema Prisma yang diberikan
+interface OrderData {
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  guestAddress: string;
+  notes?: string;
+  orders: {
+    productId: string;
+    quantity: number; // Akan dihandle di logic bisnis
+  }[];
+}
+
+interface CustomerInfo {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  notes: string;
+}
+
+interface CheckoutProps {
+  // Fungsi untuk mengirim data ke server menggunakan Prisma
+  onSubmitOrder: (orderData: OrderData) => Promise<{ success: boolean; orderIds?: string[]; error?: string }>;
+  // Optional: Data order yang sudah ada (untuk edit)
+  existingOrder?: {
+    id: string;
+    guestId: string;
+    guestName: string;
+    guestEmail: string;
+    guestPhone: string;
+    guestAddress: string;
+    productId: string;
+    product: {
+      name: string;
+      price: number;
+      image: string;
+      desc: string;
+    };
+  };
+}
+
+export default function Checkout({ onSubmitOrder, existingOrder }: CheckoutProps) {
   const router = useRouter();
   const { cartItems, updateQuantity, removeFromCart, getTotalPrice, clearCart } = useCart();
 
-  const [customerInfo, setCustomerInfo] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
+    name: existingOrder?.guestName || "",
+    email: existingOrder?.guestEmail || "",
+    phone: existingOrder?.guestPhone || "",
+    address: existingOrder?.guestAddress || "",
     notes: ""
   });
 
-  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const deliveryFee = 5000;
   const subtotal = getTotalPrice();
@@ -30,6 +72,8 @@ export default function Checkout() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCustomerInfo(prev => ({ ...prev, [name]: value }));
+    // Clear error saat user mulai mengetik
+    if (submitError) setSubmitError(null);
   };
 
   const handleQuantityChange = (productId: string, quantity: number) => {
@@ -43,14 +87,51 @@ export default function Checkout() {
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      clearCart();
-      router.push("/order-success");
-    } catch (error) { 
-      alert("Terjadi kesalahan. Silakan coba lagi.");
-      console.log("Terjadi kesalahan. Silakan coba lagi.", error)
+      // Validasi form
+      if (!customerInfo.name.trim()) {
+        throw new Error("Nama lengkap harus diisi");
+      }
+      if (!customerInfo.phone.trim()) {
+        throw new Error("Nomor telepon harus diisi");
+      }
+      if (!customerInfo.address.trim()) {
+        throw new Error("Alamat lengkap harus diisi");
+      }
+      if (!customerInfo.email.trim()) {
+        throw new Error("Email harus diisi");
+      }
+
+      // Prepare data untuk dikirim ke server
+      // perlu membuat multiple orders untuk multiple items
+      const orderData: OrderData = {
+        guestName: customerInfo.name.trim(),
+        guestEmail: customerInfo.email.trim(),
+        guestPhone: customerInfo.phone.trim(),
+        guestAddress: customerInfo.address.trim(),
+        notes: customerInfo.notes.trim() || undefined,
+        orders: cartItems.map(item => ({
+          productId: item.id,
+          quantity: item.quantity
+        }))
+      };
+
+      // Kirim data menggunakan fungsi yang diberikan parent
+      const result = await onSubmitOrder(orderData);
+
+      if (result.success) {
+        // Clear cart dan redirect ke halaman sukses
+        clearCart();
+        router.push(`/order-success${result.orderIds ? `?orderIds=${result.orderIds.join(',')}` : ""}`);
+      } else {
+        throw new Error(result.error || "Terjadi kesalahan saat memproses pesanan");
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan. Silakan coba lagi.";
+      setSubmitError(errorMessage);
+      console.error("Order submission error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -74,6 +155,11 @@ export default function Checkout() {
     );
   }
 
+  const isFormValid = customerInfo.name.trim() && 
+                     customerInfo.phone.trim() && 
+                     customerInfo.address.trim() && 
+                     customerInfo.email.trim();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
@@ -94,6 +180,13 @@ export default function Checkout() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items & Customer Info */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Error Message */}
+            {submitError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-800 text-sm">{submitError}</p>
+              </div>
+            )}
+
             {/* Cart Items */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-bold text-amber-900 mb-4">Pesanan Anda</h2>
@@ -190,12 +283,13 @@ export default function Checkout() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                   <input
                     type="email"
                     name="email"
                     value={customerInfo.email}
                     onChange={handleInputChange}
+                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="email@example.com"
                   />
@@ -250,32 +344,17 @@ export default function Checkout() {
               </div>
 
               <div className="mb-6">
-                <h3 className="font-semibold text-gray-800 mb-3">Metode Pembayaran</h3>
-                <div className="space-y-2">
-                  {["cash", "transfer", "ewallet"].map((method) => (
-                    <label key={method} className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        name="payment"
-                        value={method}
-                        checked={paymentMethod === method}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                      />
-                      <span>
-                        {{
-                          cash: "Bayar di Tempat (COD)",
-                          transfer: "Transfer Bank",
-                          ewallet: "E-Wallet (OVO/GoPay/DANA)"
-                        }[method]}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Pembayaran: <span className="font-semibold">Bayar di Tempat (COD)</span>
+                </p>
+                <p className="text-xs text-gray-500">
+                  Pembayaran dilakukan saat pesanan diterima
+                </p>
               </div>
 
               <button
                 onClick={handleSubmitOrder}
-                disabled={isSubmitting || !customerInfo.name || !customerInfo.phone || !customerInfo.address}
+                disabled={isSubmitting || !isFormValid}
                 className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition-colors"
               >
                 {isSubmitting ? "Memproses..." : `Pesan Sekarang - ${formatCurrency(total)}`}

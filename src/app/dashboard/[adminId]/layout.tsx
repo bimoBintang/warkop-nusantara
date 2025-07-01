@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   const navigation = [
     { name: 'Dashboard', href: `/dashboard/${data[0].id}` },
     { name: 'Products', href: `/dashboard/${data[0].id}/products` },
-    { name: 'Users', href: `/dashboard/${data[0].id}/users` },
+    { name: 'Orders', href: `/dashboard/${data[0].id}/order` },
 ]
   return (
     <div className="flex h-screen bg-gray-100">

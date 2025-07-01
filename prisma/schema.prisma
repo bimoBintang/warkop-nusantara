@@ -35,5 +35,21 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  orders Order[]
+
   @@map("products")
+}
+
+model Order {
+  id        String   @id @default(cuid())
+  guestId   String
+  guestName String
+  guestEmail String
+  guestPhone String
+  guestAddress String
+  notes String?
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
