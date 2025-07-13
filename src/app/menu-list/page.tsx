@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   description: 'Browse our delicious menu items',
 };
 
-// Loading component
 function MenuListSkeleton() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -41,7 +40,6 @@ function MenuListSkeleton() {
   );
 }
 
-// Server component
 async function MenuListContent() {
   const products = await getProducts();
   

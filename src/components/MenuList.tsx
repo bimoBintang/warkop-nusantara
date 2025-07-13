@@ -7,7 +7,6 @@ import { Plus, Minus, ShoppingCart, Search, Filter } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 
-// Tipe untuk produk dari props
 interface Product {
   id: string;
   name: string;
@@ -80,12 +79,10 @@ export function MenuList({ products }: MenuListProps) {
         });
       }
     }
-
-    // Jika ingin menambahkan logika pengurangan/hapus, gunakan updateQuantity atau removeFromCart di context
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -152,85 +149,83 @@ export function MenuList({ products }: MenuListProps) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedProducts.map((product, index) => {
-            const cartQuantity = getCartItemQuantity(product.id);
-            return (
+              const cartQuantity = getCartItemQuantity(product.id);
+              return (
                 <div key={product.id} className="rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                <div className="h-48 w-full bg-gradient-to-br from-amber-400 to-amber-600 relative">
+                  <div className="h-48 w-full relative group bg-gray-100">
                     {product.image ? (
-                    <Image
-                        src={product.image?.startsWith("http")
-                        ? product.image
-                        : product.image?.startsWith("/uploads/")
-                            ? product.image
-                            : `/uploads/${product.image}`}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 25vw"
-                        className="object-cover hover:scale-105 transition-transform duration-200"
-                        priority={index < 4}
-                        onError={(e) => {
-                        console.error('Image failed to load:', e, product.image);
-                        }}
-                        onLoad={() => {
-                        console.log('Image loaded successfully:', product.image);
-                        }}
-                    />
+                      <>
+                        <Image
+                          src={
+                            product.image?.startsWith("http")
+                              ? product.image
+                              : product.image?.startsWith("/uploads/")
+                                ? product.image
+                                : `/uploads/${product.image}`
+                          }
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 25vw"
+                          className="object-cover transition-transform duration-200 group-hover:scale-105 rounded-t-lg z-0"
+                          priority={index < 4}
+                        />
+                        <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 rounded-t-lg z-10" />
+                      </>
                     ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white relative z-10">
+                      <div className="w-full h-full flex items-center justify-center text-white bg-gradient-to-br from-amber-400 to-amber-600">
                         <div className="text-center">
-                        <ShoppingCart size={32} className="mx-auto mb-2" />
-                        <span className="text-sm">No Image</span>
+                          <ShoppingCart size={32} className="mx-auto mb-2" />
+                          <span className="text-sm">No Image</span>
                         </div>
-                    </div>
+                      </div>
                     )}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 z-10" />
-                </div>
+                  </div>
 
-                <div className="p-4">
+                  <div className="p-4">
                     <h3 className="font-semibold text-lg text-gray-800 mb-1 line-clamp-2">
-                    {product.name}
+                      {product.name}
                     </h3>
 
                     <p className="text-xl font-bold text-amber-600 mb-2">
-                    {formatCurrency(product.price)}
+                      {formatCurrency(product.price)}
                     </p>
 
                     {product.desc && (
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                         {product.desc}
-                    </p>
+                      </p>
                     )}
 
                     <div className="flex items-center justify-between">
-                    {cartQuantity === 0 ? (
+                      {cartQuantity === 0 ? (
                         <button
-                        onClick={() => handleAddToCart(product)}
-                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+                          onClick={() => handleAddToCart(product)}
+                          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2"
                         >
-                        <Plus size={16} />
-                        Tambah
+                          <Plus size={16} />
+                          Tambah
                         </button>
-                    ) : (
+                      ) : (
                         <div className="flex-1 flex items-center justify-between bg-gray-100 rounded-lg p-1">
-                        <button
+                          <button
                             onClick={() => handleQuantityChange(product, cartQuantity - 1)}
                             className="p-1 hover:bg-gray-200 rounded-md transition-colors"
-                        >
+                          >
                             <Minus size={16} />
-                        </button>
-                        <span className="font-semibold px-3">{cartQuantity}</span>
-                        <button
+                          </button>
+                          <span className="font-semibold px-3">{cartQuantity}</span>
+                          <button
                             onClick={() => handleQuantityChange(product, cartQuantity + 1)}
                             className="p-1 hover:bg-gray-200 rounded-md transition-colors"
-                        >
+                          >
                             <Plus size={16} />
-                        </button>
+                          </button>
                         </div>
-                    )}
+                      )}
                     </div>
+                  </div>
                 </div>
-                </div>
-            );
+              );
             })}
           </div>
         )}
