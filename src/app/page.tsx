@@ -3,6 +3,7 @@ import { ChevronDown, Clock, Coffee, MapPin } from "lucide-react";
 import Image from "next/image";
 import {prisma }from "@/lib/prisma"
 import { CartButton } from "@/components/cartButton";
+import Link from "next/link";
 
 export default async function Home() {
 
@@ -34,9 +35,9 @@ export default async function Home() {
             Nikmati cita rasa kopi tradisional Indonesia dengan suasana hangat dan ramah
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-full font-semibold transition-colors transform hover:scale-105">
+            <Link href="/menu-list" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-full font-semibold transition-colors transform hover:scale-105">
               Lihat Menu
-            </button>
+            </Link>
             <button className="border-2 border-white text-white hover:bg-white hover:text-amber-900 px-8 py-3 rounded-full font-semibold transition-all transform hover:scale-105">
               Tentang Kami
             </button>

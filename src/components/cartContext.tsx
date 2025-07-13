@@ -24,7 +24,7 @@ export interface CartItem {
 
 export interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (item: CartItem) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   getTotalItems: () => number;
@@ -32,6 +32,7 @@ export interface CartContextType {
   clearCart: () => void;
   isInCart: (productId: string) => boolean;
   getCartItem: (productId: string) => CartItem | undefined;
+  getCartItemQuantity: (productId: string) => number;
 }
 
 // Create context dengan default values
@@ -45,6 +46,7 @@ const CartContext = createContext<CartContextType>({
   clearCart: () => {},
   isInCart: () => false,
   getCartItem: () => undefined,
+  getCartItemQuantity: () => 0
 });
 
 // Cart Provider Component
@@ -84,41 +86,33 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     }
   }, [cartItems, isLoaded]);
 
-  const addToCart = (product: Product) => {
-    console.log('Adding product to cart:', product);
-    console.log('Current cart items:', cartItems);
-    
-    setCartItems(prev => {
-      const existingItem = prev.find(item => item.id === product.id);
-      console.log('Existing item found:', existingItem);
-      
-      if (existingItem) {
-        console.log('Product already exists, increasing quantity');
-        const updatedCart = prev.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-        console.log('Updated cart:', updatedCart);
-        return updatedCart;
-      }
-      
-      // Convert Product ke CartItem
-      const newCartItem: CartItem = {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        desc: product.desc,
-        image: product.image,
-        quantity: 1
-      };
-      
-      console.log('Adding new item to cart:', newCartItem);
-      const newCart = [...prev, newCartItem];
-      console.log('New cart:', newCart);
-      return newCart;
-    });
-  };
+  const addToCart = (item: CartItem) => {
+  console.log('Adding product to cart:', item);
+  console.log('Current cart items:', cartItems);
+
+  setCartItems(prev => {
+    const existingItem = prev.find(cartItem => cartItem.id === item.id);
+    console.log('Existing item found:', existingItem);
+
+    if (existingItem) {
+      console.log('Product already exists, increasing quantity');
+      const updatedCart = prev.map(cartItem =>
+        cartItem.id === item.id
+          ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
+          : cartItem
+      );
+      console.log('Updated cart:', updatedCart);
+      return updatedCart;
+    }
+
+    // Jika item belum ada, langsung tambahkan
+    console.log('Adding new item to cart:', item);
+    const newCart = [...prev, item];
+    console.log('New cart:', newCart);
+    return newCart;
+  });
+};
+
 
   const removeFromCart = (productId: string) => {
     console.log('Removing product from cart:', productId);
@@ -161,6 +155,11 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     return cartItems.find(item => item.id === productId);
   };
 
+  const getCartItemQuantity = (productId: string) => {
+  const item = cartItems.find(item => item.id === productId);
+  return item ? item.quantity : 0;
+};
+
   const value: CartContextType = {
     cartItems,
     addToCart,
@@ -171,6 +170,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     clearCart,
     isInCart,
     getCartItem,
+    getCartItemQuantity
   };
 
   return (

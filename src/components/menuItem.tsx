@@ -1,16 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useCart, Product } from "@/components/cartContext";
+import { useCart, CartItem } from "@/components/cartContext";
 
 interface MenuItemProps {
-  menuItems: Partial<Product>[];
+  menuItems: Partial<CartItem>[];
 }
 
 export const MenuItem = ({ menuItems }: MenuItemProps) => {
   const { addToCart } = useCart();
 
-  const handleAddToCart = (item: Partial<Product>) => {
+  const handleAddToCart = (item: Partial<CartItem>) => {
     // Validasi minimal property
     if (!item.id || !item.name || typeof item.price !== "number") {
       console.error("Produk tidak valid:", item);
@@ -18,14 +18,13 @@ export const MenuItem = ({ menuItems }: MenuItemProps) => {
     }
 
     // Buat objek Product lengkap
-    const newProduct: Product = {
+    const newProduct: CartItem = {
       id: item.id,
       name: item.name,
       price: item.price,
       desc: item.desc ?? null,
       image: item.image ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      quantity: 1,
     };
 
     addToCart(newProduct);

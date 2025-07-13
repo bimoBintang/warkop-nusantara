@@ -12,6 +12,7 @@ export interface User {
     price: number
     desc?: string | null
     image?: string | null
+    available: boolean
     createdAt: Date
     updatedAt: Date
   }
@@ -28,3 +29,23 @@ export interface User {
     desc?: string
     image?: string
   }
+
+  export interface Category {
+  id: number
+  name: string
+  description?: string
+  menuItems: MenuItem[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface MenuItem {
+  id: number
+  name: string
+  description?: string
+  price: number
+  image?: string
+  available: boolean
+  createdAt: Date
+  updatedAt: Date
+}
