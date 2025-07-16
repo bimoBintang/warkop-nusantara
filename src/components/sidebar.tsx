@@ -25,7 +25,7 @@ export default function Sidebar({ navigation }: NavigationItem) {
       })
 
       // Redirect ke halaman login atau home setelah logout
-      router.push('/auth/login')
+      router.push('/')
     } catch (error) {
       console.error('Logout failed:', error)
     }

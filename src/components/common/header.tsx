@@ -31,7 +31,7 @@ export const Header = ()=> {
                 
                 <div className="hidden md:flex items-center space-x-8">
                   <Link href="#home" className="text-white hover:text-amber-300 transition-colors">Beranda</Link>
-                  <Link href="#menu" className="text-white hover:text-amber-300 transition-colors">Menu</Link>
+                  <Link href="/menu-list" className="text-white hover:text-amber-300 transition-colors">Menu</Link>
                   <Link href="#about" className="text-white hover:text-amber-300 transition-colors">Tentang</Link>
                   <Link href="#contact" className="text-white hover:text-amber-300 transition-colors">Kontak</Link>
                 </div>
@@ -49,7 +49,7 @@ export const Header = ()=> {
                 <div className="md:hidden absolute top-full left-0 w-full bg-amber-900/95 backdrop-blur-sm">
                   <div className="flex flex-col space-y-4 p-4">
                     <Link href="#home" className="text-white hover:text-amber-300 transition-colors">Beranda</Link>
-                    <Link href="#menu" className="text-white hover:text-amber-300 transition-colors">Menu</Link>
+                    <Link href="/menu-list" className="text-white hover:text-amber-300 transition-colors">Menu</Link>
                     <Link href="#about" className="text-white hover:text-amber-300 transition-colors">Tentang</Link>
                     <Link href="#contact" className="text-white hover:text-amber-300 transition-colors">Kontak</Link>
                   </div>

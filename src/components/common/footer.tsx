@@ -11,7 +11,13 @@ export const Footer = ()=> {
                 <span className="text-xl font-bold">Warkop Bangboy</span>
             </div>
             <p className="text-amber-200">
-                © 2024 Warkop Bangboy. Semua hak cipta dilindungi.
+                Email: warkopbangboy47@gmai.com
+            </p>
+            <p className="text-amber-200">
+                No telp: 0858449892754
+            </p>
+            <p className="text-amber-200">
+                Alamat: KOPI SEMPER, RT.1/RW.1, Semper Bar., Kec. Cilincing, Kota Jkt Utara, Daerah Khusus Ibukota Jakarta 14130 Jakarta, Indonesia
             </p>
             <Link href='/auth/login' className="text-amber-200">admin panel</Link>
             </div>
