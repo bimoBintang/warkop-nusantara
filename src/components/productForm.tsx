@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CldUploadWidget } from 'next-cloudinary'
+import { CldUploadWidget, CloudinaryUploadWidgetResults } from 'next-cloudinary'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +17,7 @@ interface ProductFormProps {
 export default function ProductForm({ product, isEdit = false }: ProductFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [formData, setFormData] = useState({
     name: product?.name ?? '',
     price: product?.price?.toString() ?? '',
@@ -24,41 +25,39 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
     image: product?.image ?? ''
   })
 
-  const [uploading, setUploading] = useState(false)
-
-  const handleUpload = (result: any) => {
-    const url = result?.info?.secure_url
-    if (url) {
-      setFormData({ ...formData, image: url })
+  const handleUpload = (result: CloudinaryUploadWidgetResults) => {
+    if (result.info && typeof result.info !== 'string') {
+      const url = result.info.secure_url
+      if (url) {
+        setFormData(prev => ({ ...prev, image: url }))
+      }
     }
   }
 
   const handleFileUpload = async (file: File) => {
     setUploading(true)
-    
+
     const uploadFormData = new FormData()
     uploadFormData.append('file', file)
     uploadFormData.append('upload_preset', 'next_unsigned')
     uploadFormData.append('cloud_name', 'dikyoapkt')
 
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/dikyoapkt/image/upload`,
-        {
-          method: 'POST',
-          body: uploadFormData
-        }
-      )
+      const response = await fetch(`https://api.cloudinary.com/v1_1/dikyoapkt/image/upload`, {
+        method: 'POST',
+        body: uploadFormData
+      })
 
       if (response.ok) {
-        const data = await response.json()
-        setFormData({ ...formData, image: data.secure_url })
+        const data: { secure_url: string } = await response.json()
+        setFormData(prev => ({ ...prev, image: data.secure_url }))
       } else {
-        throw new Error('Upload failed')
+        const errorData = await response.json()
+        throw new Error(errorData.error?.message || 'Upload failed')
       }
     } catch (error) {
       console.error('Upload error:', error)
-      alert('Upload failed. Please try again.')
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Please try again.'}`)
     } finally {
       setUploading(false)
     }
@@ -67,14 +66,12 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
       if (!allowedTypes.includes(file.type)) {
         alert('Please select a valid image file (JPG, PNG, GIF, WebP)')
         return
       }
 
-      // Validate file size (5MB)
       if (file.size > 5000000) {
         alert('File size must be less than 5MB')
         return
@@ -85,7 +82,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
   }
 
   const handleRemoveImage = () => {
-    setFormData({ ...formData, image: '' })
+    setFormData(prev => ({ ...prev, image: '' }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -108,11 +105,12 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
         router.push('/dashboard/products')
         router.refresh()
       } else {
-        throw new Error('Failed to save product')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to save product')
       }
     } catch (error) {
       console.error('Error:', error)
-      alert('Error saving product')
+      alert(`Error saving product: ${error instanceof Error ? error.message : 'Please try again.'}`)
     } finally {
       setLoading(false)
     }
@@ -130,8 +128,9 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
             <Input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               required
+              disabled={loading}
             />
           </div>
 
@@ -140,8 +139,11 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
             <Input
               type="number"
               value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
               required
+              disabled={loading}
+              min="0"
+              step="1"
             />
           </div>
 
@@ -150,14 +152,15 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
             <Input
               type="text"
               value={formData.desc}
-              onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
+              onChange={(e) => setFormData(prev => ({ ...prev, desc: e.target.value }))}
+              disabled={loading}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">Product Image</label>
             <div className="space-y-2">
-              {/* Cloudinary Widget Option */}
+              {/* Cloudinary Widget */}
               <CldUploadWidget
                 uploadPreset="next_unsigned"
                 options={{
@@ -165,39 +168,24 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
                   showPoweredBy: false,
                   sources: ['local', 'url', 'camera'],
                   maxFiles: 1,
-                  maxFileSize: 5000000, // 5MB
+                  maxFileSize: 5000000,
                   resourceType: 'image',
                   clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-                  singleUploadAutoClose: false, // Prevent auto-close after upload
+                  singleUploadAutoClose: false,
                   showAdvancedOptions: false,
                   showCompletedButton: true,
                   showUploadMoreButton: false,
                   multiple: false,
                   autoMinimize: false,
                   theme: 'minimal',
-                  styles: {
-                    palette: {
-                      window: '#FFFFFF',
-                      windowBorder: '#90A0B3',
-                      tabIcon: '#0078FF',
-                      menuIcons: '#5A616A',
-                      textDark: '#000000',
-                      textLight: '#FFFFFF',
-                      link: '#0078FF',
-                      action: '#FF620C',
-                      inactiveTabIcon: '#0E2F5A',
-                      error: '#F44235',
-                      inProgress: '#0078FF',
-                      complete: '#20B832',
-                      sourceBg: '#E4EBF1'
-                    }
-                  }
+                  cropping: false,
+                  folder: 'products'
                 }}
-                onError={(error: any) => {
+                onError={(error) => {
                   console.error('Upload error:', error)
                   alert('Upload failed. Please try again.')
                 }}
-                onSuccess={(result: any) => {
+                onSuccess={(result: CloudinaryUploadWidgetResults) => {
                   console.log('Upload successful:', result)
                   handleUpload(result)
                 }}
@@ -209,29 +197,29 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
                     onClick={() => open()}
                     variant="outline"
                     className="w-full"
-                    disabled={uploading}
+                    disabled={uploading || loading}
                   >
                     {uploading ? 'Uploading...' : formData.image ? 'Change Image' : 'Upload Image (Widget)'}
                   </Button>
                 )}
               </CldUploadWidget>
 
-              {/* Alternative: Manual File Upload */}
               <div className="text-center text-sm text-gray-500">or</div>
-              
+
+              {/* Manual Upload */}
               <div className="relative">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                   onChange={handleFileChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  disabled={uploading}
+                  disabled={uploading || loading}
                 />
                 <Button
                   type="button"
                   variant="outline"
                   className="w-full"
-                  disabled={uploading}
+                  disabled={uploading || loading}
                 >
                   {uploading ? 'Uploading...' : formData.image ? 'Change Image' : 'Upload Image (Manual)'}
                 </Button>
@@ -245,6 +233,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
                       alt="Product preview"
                       fill
                       className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </div>
                   <Button
@@ -253,11 +242,13 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
                     size="sm"
                     className="absolute top-2 right-2"
                     onClick={handleRemoveImage}
+                    disabled={loading}
                   >
                     Remove
                   </Button>
                 </div>
               )}
+
               <p className="text-xs text-gray-500">
                 Supported formats: JPG, PNG, GIF, WebP. Max size: 5MB
               </p>
@@ -265,13 +256,14 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
           </div>
 
           <div className="flex gap-2">
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || uploading}>
               {loading ? 'Saving...' : isEdit ? 'Update' : 'Create'}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => router.back()}
+              disabled={loading}
             >
               Cancel
             </Button>
