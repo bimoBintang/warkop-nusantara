@@ -20,8 +20,10 @@ export default function MenuCard({ item }: MenuCardProps) {
       <div className="relative">
         {item.image ? (
           <Image
-            src={item.image} 
+            src={item.image}
             alt={item.name}
+            width={400}
+            height={200}
             className="w-full h-48 object-cover"
           />
         ) : (
@@ -29,8 +31,8 @@ export default function MenuCard({ item }: MenuCardProps) {
             <Coffee className="w-16 h-16 text-amber-600" />
           </div>
         )}
-        
-        {!item.available && (
+
+        {item.available === false && (
           <div className="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
             <div className="bg-red-500 text-white px-4 py-2 rounded-full flex items-center gap-2">
               <Clock className="w-4 h-4" />
@@ -39,13 +41,13 @@ export default function MenuCard({ item }: MenuCardProps) {
           </div>
         )}
       </div>
-      
+
       <div className="p-6">
         <h3 className="text-xl font-bold text-gray-800 mb-2">{item.name}</h3>
         {item.desc && (
           <p className="text-gray-600 text-sm mb-4">{item.desc}</p>
         )}
-        
+
         <div className="flex items-center justify-between">
           <span className="text-2xl font-bold text-amber-600">
             {formatPrice(item.price)}

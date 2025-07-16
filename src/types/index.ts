@@ -14,6 +14,7 @@ export interface User {
     image?: string | null
     createdAt: Date
     updatedAt: Date
+    available?: boolean
   }
   
   export interface CreateUserData {
@@ -44,7 +45,6 @@ export interface MenuItem {
   description?: string
   price: number
   image?: string
-  available: boolean
   createdAt: Date
   updatedAt: Date
 }
