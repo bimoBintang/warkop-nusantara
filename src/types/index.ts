@@ -12,7 +12,6 @@ export interface User {
     price: number
     desc?: string | null
     image?: string | null
-    available: boolean
     createdAt: Date
     updatedAt: Date
   }
