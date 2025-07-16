@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    domains: ['images.unsplash.com', 'warkop-nusantara.vercel.app'],
+    domains: ['images.unsplash.com', 'warkop-nusantara.vercel.app', 'res.cloudinary.com'],
     remotePatterns: [
       {
         protocol: 'https',

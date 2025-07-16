@@ -26,7 +26,7 @@ export const Header = ()=> {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Coffee className="h-8 w-8 text-amber-300" />
-                  <span className="text-2xl font-bold text-white">Warkop Nusantara</span>
+                  <span className="text-2xl font-bold text-white">Warkop Bangboy</span>
                 </div>
                 
                 <div className="hidden md:flex items-center space-x-8">

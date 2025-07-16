@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { CldUploadWidget } from 'next-cloudinary'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,10 +16,7 @@ interface ProductFormProps {
 
 export default function ProductForm({ product, isEdit = false }: ProductFormProps) {
   const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [preview, setPreview] = useState<string | null>(product?.image || null)
   const [formData, setFormData] = useState({
     name: product?.name ?? '',
     price: product?.price?.toString() ?? '',
@@ -26,61 +24,68 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
     image: product?.image ?? ''
   })
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const [uploading, setUploading] = useState(false)
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file')
-      return
+  const handleUpload = (result: any) => {
+    const url = result?.info?.secure_url
+    if (url) {
+      setFormData({ ...formData, image: url })
     }
+  }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size should be less than 5MB')
-      return
-    }
-
-    // Create preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string)
-    }
-    reader.readAsDataURL(file)
-
-    // Upload file
+  const handleFileUpload = async (file: File) => {
     setUploading(true)
-    try {
-      const uploadFormData = new FormData()
-      uploadFormData.append('file', file)
+    
+    const uploadFormData = new FormData()
+    uploadFormData.append('file', file)
+    uploadFormData.append('upload_preset', 'next_unsigned')
+    uploadFormData.append('cloud_name', 'dikyoapkt')
 
-      const response = await fetch('/api/uploads', {
-        method: 'POST',
-        body: uploadFormData,
-      })
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/dikyoapkt/image/upload`,
+        {
+          method: 'POST',
+          body: uploadFormData
+        }
+      )
 
       if (response.ok) {
-        const { url } = await response.json()
-        setFormData({ ...formData, image: url })
+        const data = await response.json()
+        setFormData({ ...formData, image: data.secure_url })
       } else {
-        throw new Error('Failed to upload image')
+        throw new Error('Upload failed')
       }
     } catch (error) {
       console.error('Upload error:', error)
-      alert('Error uploading image')
-      setPreview(null)
+      alert('Upload failed. Please try again.')
     } finally {
       setUploading(false)
     }
   }
 
-  const handleRemoveImage = () => {
-    setPreview(null)
-    setFormData({ ...formData, image: '' })
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPG, PNG, GIF, WebP)')
+        return
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5000000) {
+        alert('File size must be less than 5MB')
+        return
+      }
+
+      handleFileUpload(file)
     }
+  }
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, image: '' })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -129,7 +134,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">Price (IDR)</label>
             <Input
@@ -139,7 +144,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">Description</label>
             <Input
@@ -148,27 +153,95 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
               onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">Product Image</label>
             <div className="space-y-2">
-              <Input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                disabled={uploading}
-                className="cursor-pointer"
-              />
-              {uploading && (
-                <p className="text-sm text-blue-600">Uploading image...</p>
-              )}
+              {/* Cloudinary Widget Option */}
+              <CldUploadWidget
+                uploadPreset="next_unsigned"
+                options={{
+                  cloudName: 'dikyoapkt',
+                  showPoweredBy: false,
+                  sources: ['local', 'url', 'camera'],
+                  maxFiles: 1,
+                  maxFileSize: 5000000, // 5MB
+                  resourceType: 'image',
+                  clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+                  singleUploadAutoClose: false, // Prevent auto-close after upload
+                  showAdvancedOptions: false,
+                  showCompletedButton: true,
+                  showUploadMoreButton: false,
+                  multiple: false,
+                  autoMinimize: false,
+                  theme: 'minimal',
+                  styles: {
+                    palette: {
+                      window: '#FFFFFF',
+                      windowBorder: '#90A0B3',
+                      tabIcon: '#0078FF',
+                      menuIcons: '#5A616A',
+                      textDark: '#000000',
+                      textLight: '#FFFFFF',
+                      link: '#0078FF',
+                      action: '#FF620C',
+                      inactiveTabIcon: '#0E2F5A',
+                      error: '#F44235',
+                      inProgress: '#0078FF',
+                      complete: '#20B832',
+                      sourceBg: '#E4EBF1'
+                    }
+                  }
+                }}
+                onError={(error: any) => {
+                  console.error('Upload error:', error)
+                  alert('Upload failed. Please try again.')
+                }}
+                onSuccess={(result: any) => {
+                  console.log('Upload successful:', result)
+                  handleUpload(result)
+                }}
+                onUpload={handleUpload}
+              >
+                {({ open }) => (
+                  <Button
+                    type="button"
+                    onClick={() => open()}
+                    variant="outline"
+                    className="w-full"
+                    disabled={uploading}
+                  >
+                    {uploading ? 'Uploading...' : formData.image ? 'Change Image' : 'Upload Image (Widget)'}
+                  </Button>
+                )}
+              </CldUploadWidget>
+
+              {/* Alternative: Manual File Upload */}
+              <div className="text-center text-sm text-gray-500">or</div>
               
-              {preview && (
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={uploading}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={uploading}
+                >
+                  {uploading ? 'Uploading...' : formData.image ? 'Change Image' : 'Upload Image (Manual)'}
+                </Button>
+              </div>
+
+              {formData.image && (
                 <div className="relative">
                   <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
                     <Image
-                      src={preview}
+                      src={formData.image}
                       alt="Product preview"
                       fill
                       className="object-cover"
@@ -185,15 +258,14 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
                   </Button>
                 </div>
               )}
-              
               <p className="text-xs text-gray-500">
-                Supported formats: JPG, PNG, GIF. Max size: 5MB
+                Supported formats: JPG, PNG, GIF, WebP. Max size: 5MB
               </p>
             </div>
           </div>
-          
+
           <div className="flex gap-2">
-            <Button type="submit" disabled={loading || uploading}>
+            <Button type="submit" disabled={loading}>
               {loading ? 'Saving...' : isEdit ? 'Update' : 'Create'}
             </Button>
             <Button

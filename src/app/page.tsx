@@ -29,7 +29,7 @@ export default async function Home() {
         
         <div className="relative z-20 text-center text-white px-4 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
-            Warkop <span className="text-amber-300">Nusantara</span>
+            Warkop <span className="text-amber-300">Bangboy</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 opacity-90">
             Nikmati cita rasa kopi tradisional Indonesia dengan suasana hangat dan ramah
@@ -75,9 +75,9 @@ export default async function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-amber-900 mb-6">Tentang Warkop Nusantara</h2>
+              <h2 className="text-4xl font-bold text-amber-900 mb-6">Tentang Warkop Bangboy</h2>
               <p className="text-gray-600 mb-6 text-lg leading-relaxed">
-                Sejak tahun 1995, Warkop Nusantara telah menjadi tempat berkumpul favorit masyarakat. 
+                Sejak tahun 1995, Warkop Bangboy telah menjadi tempat berkumpul favorit masyarakat. 
                 Kami bangga menyajikan kopi tradisional Indonesia dengan cita rasa yang autentik dan 
                 suasana yang hangat dan bersahabat.
               </p>
