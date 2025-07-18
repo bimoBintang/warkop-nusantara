@@ -33,7 +33,7 @@ export const Header = ()=> {
                   <Link href="#home" className="text-white hover:text-amber-300 transition-colors">Beranda</Link>
                   <Link href="/menu-list" className="text-white hover:text-amber-300 transition-colors">Menu</Link>
                   <Link href="#about" className="text-white hover:text-amber-300 transition-colors">Tentang</Link>
-                  <Link href="#contact" className="text-white hover:text-amber-300 transition-colors">Kontak</Link>
+                  <Link href="#about" className="text-white hover:text-amber-300 transition-colors">Kontak</Link>
                 </div>
     
                 <button

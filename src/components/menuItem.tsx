@@ -45,7 +45,7 @@ export const MenuItem = ({ menuItems }: MenuItemProps) => {
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-amber-900 mb-4">Menu Spesial Kami</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Koleksi minuman kopi terbaik dengan cita rasa autentik Indonesia
+            Menu terbaik yang pernah tercipta  
           </p>
         </div>
 

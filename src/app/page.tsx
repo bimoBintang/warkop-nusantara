@@ -32,15 +32,15 @@ export default async function Home() {
             Warkop <span className="text-amber-300">Bangboy</span>
           </h1>
           <p className="text-xl md:text-2xl mb-8 opacity-90">
-            Nikmati cita rasa kopi tradisional Indonesia dengan suasana hangat dan ramah
+            Nikmati berbagai menu spesial yang pernah tercipta dari Warkop BangBoy
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/menu-list" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-full font-semibold transition-colors transform hover:scale-105">
               Lihat Menu
             </Link>
-            <button className="border-2 border-white text-white hover:bg-white hover:text-amber-900 px-8 py-3 rounded-full font-semibold transition-all transform hover:scale-105">
+            <Link href="#about" className="border-2 border-white text-white hover:bg-white hover:text-amber-900 px-8 py-3 rounded-full font-semibold transition-all transform hover:scale-105">
               Tentang Kami
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -54,7 +54,7 @@ export default async function Home() {
             <div className="text-center p-6 rounded-lg bg-amber-50 hover:shadow-lg transition-shadow">
               <Coffee className="h-16 w-16 text-amber-600 mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2">Kopi Premium</h3>
-              <p className="text-gray-600">Biji kopi pilihan dari berbagai daerah di Indonesia</p>
+              <p className="text-gray-600">Berbagai Macam Rasa</p>
             </div>
             <div className="text-center p-6 rounded-lg bg-amber-50 hover:shadow-lg transition-shadow">
               <Clock className="h-16 w-16 text-amber-600 mx-auto mb-4" />
@@ -77,25 +77,26 @@ export default async function Home() {
             <div>
               <h2 className="text-4xl font-bold text-amber-900 mb-6">Tentang Warkop Bangboy</h2>
               <p className="text-gray-600 mb-6 text-lg leading-relaxed">
-                Sejak tahun 1995, Warkop Bangboy telah menjadi tempat berkumpul favorit masyarakat. 
-                Kami bangga menyajikan kopi tradisional Indonesia dengan cita rasa yang autentik dan 
-                suasana yang hangat dan bersahabat.
+                Sejak tahun 2018, Warkop BangBoy telah menjadi tempat berkumpul favorit remaja. Kami
+                bangga menyajikan menu dengan cita rasa yang autentik, suasana yang hangat
+                bersahabat dan tidak lupa dengan budget pelajar.
               </p>
               <p className="text-gray-600 mb-8 text-lg leading-relaxed">
-                Dengan menggunakan biji kopi pilihan dari berbagai daerah di Indonesia, kami berkomitmen 
-                untuk memberikan pengalaman minum kopi terbaik bagi setiap pelanggan.
+                Dengan di dirikannya Warkop BangBoy, kami berkomitmen untuk memberikan
+                pengalaman yang tidak terlupakan untuk bersantai dengan teman hingga keluarga bagi
+                setiap pelanggan.
               </p>
               <div className="flex items-center space-x-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-600">28+</div>
+                  <div className="text-3xl font-bold text-amber-600">6+</div>
                   <div className="text-gray-600">Tahun Berpengalaman</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-600">50K+</div>
+                  <div className="text-3xl font-bold text-amber-600">1K+</div>
                   <div className="text-gray-600">Pelanggan Puas</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-600">15+</div>
+                  <div className="text-3xl font-bold text-amber-600">10+</div>
                   <div className="text-gray-600">Varian Menu</div>
                 </div>
               </div>
