@@ -330,14 +330,24 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
     }
   }, [cloudName, uploadPreset, onSuccess, onError])
 
-  const uploadFromWidget = useCallback((result: any) => {
+interface CloudinaryWidgetResultInfo {
+    secure_url?: string
+    [key: string]: unknown
+}
+
+interface CloudinaryWidgetResult {
+    info?: CloudinaryWidgetResultInfo | string
+    [key: string]: unknown
+}
+
+const uploadFromWidget = useCallback((result: CloudinaryWidgetResult) => {
     if (result.info && typeof result.info !== 'string') {
-      const url = result.info.secure_url
-      if (url) {
-        onSuccess?.(url)
-      }
+        const url = result.info.secure_url
+        if (url) {
+            onSuccess?.(url)
+        }
     }
-  }, [onSuccess])
+}, [onSuccess])
 
   return {
     uploading,
