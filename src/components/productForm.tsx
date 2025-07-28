@@ -6,8 +6,18 @@ import { CldUploadWidget, CloudinaryUploadWidgetResults } from 'next-cloudinary'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Product } from '@/types'
 import Image from 'next/image'
+import { createProduct, updateProduct } from '@/lib/action/product'
+import { validateCreateProductForm, validateUpdateProductForm } from '@/types/validation'
+import { 
+  handleProductError, 
+  getErrorToastMessage,
+  mapErrorsToFields,
+  getSuccessMessage,
+  validateField
+} from '@/lib/utils/error-handler'
 
 interface ProductFormProps {
   product?: Product
@@ -25,17 +35,74 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
     image: product?.image ?? ''
   })
 
+  // Validation states
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [submitError, setSubmitError] = useState<string>('')
+  const [successMessage, setSuccessMessage] = useState<string>('')
+
+  const clearMessages = () => {
+    setSubmitError('')
+    setSuccessMessage('')
+  }
+
+  const validateFormData = () => {
+    clearMessages()
+    setErrors({})
+
+    const schema = isEdit ? validateUpdateProductForm : validateCreateProductForm
+    const result = schema(formData)
+
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      result.error.issues.forEach(issue => {
+        const field = issue.path[0] as string
+        fieldErrors[field] = issue.message
+      })
+      setErrors(fieldErrors)
+      return false
+    }
+
+    return true
+  }
+
+  const validateSingleField = (field: string, value: string) => {
+    const isRequired = field === 'name' || field === 'price'
+    const error = validateField(field, value, isRequired)
+    
+    setErrors(prev => ({
+      ...prev,
+      [field]: error || ''
+    }))
+
+    return !error
+  }
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    
+    // Real-time validation
+    if (errors[field] || value.trim()) {
+      validateSingleField(field, value)
+    }
+    
+    clearMessages()
+  }
+
   const handleUpload = (result: CloudinaryUploadWidgetResults) => {
     if (result.info && typeof result.info !== 'string') {
       const url = result.info.secure_url
       if (url) {
         setFormData(prev => ({ ...prev, image: url }))
+        // Validate image URL
+        validateSingleField('image', url)
+        clearMessages()
       }
     }
   }
 
   const handleFileUpload = async (file: File) => {
     setUploading(true)
+    clearMessages()
 
     const uploadFormData = new FormData()
     uploadFormData.append('file', file)
@@ -51,13 +118,15 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
       if (response.ok) {
         const data: { secure_url: string } = await response.json()
         setFormData(prev => ({ ...prev, image: data.secure_url }))
+        validateSingleField('image', data.secure_url)
+        setSuccessMessage('Image uploaded successfully!')
       } else {
         const errorData = await response.json()
         throw new Error(errorData.error?.message || 'Upload failed')
       }
     } catch (error) {
       console.error('Upload error:', error)
-      alert(`Upload failed: ${error instanceof Error ? error.message : 'Please try again.'}`)
+      setSubmitError(`Upload failed: ${error instanceof Error ? error.message : 'Please try again.'}`)
     } finally {
       setUploading(false)
     }
@@ -68,12 +137,12 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
     if (file) {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
       if (!allowedTypes.includes(file.type)) {
-        alert('Please select a valid image file (JPG, PNG, GIF, WebP)')
+        setSubmitError('Please select a valid image file (JPG, PNG, GIF, WebP)')
         return
       }
 
       if (file.size > 5000000) {
-        alert('File size must be less than 5MB')
+        setSubmitError('File size must be less than 5MB')
         return
       }
 
@@ -83,37 +152,66 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
 
   const handleRemoveImage = () => {
     setFormData(prev => ({ ...prev, image: '' }))
+    setErrors(prev => ({ ...prev, image: '' }))
+    clearMessages()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateFormData()) {
+      setSubmitError('Please fix the validation errors before submitting.')
+      return
+    }
+
     setLoading(true)
+    clearMessages()
 
     try {
-      const url = isEdit ? `/api/products/${product?.id}` : '/api/products'
-      const method = isEdit ? 'PATCH' : 'POST'
+      const productData = {
+        name: formData.name.trim(),
+        price: Number(formData.price),
+        desc: formData.desc.trim() || undefined,
+        image: formData.image.trim() || undefined
+      }
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
+      let result: Product
+      if (isEdit && product?.id) {
+        result = await updateProduct(product.id, productData)
+      } else {
+        result = await createProduct(productData)
+      }
 
-      if (response.ok) {
+      const successMsg = getSuccessMessage(isEdit ? 'update' : 'create', result.name)
+      setSuccessMessage(successMsg)
+
+      // Redirect after a short delay to show success message
+      setTimeout(() => {
         router.push('/dashboard/products')
         router.refresh()
-      } else {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to save product')
-      }
+      }, 1500)
+
     } catch (error) {
-      console.error('Error:', error)
-      alert(`Error saving product: ${error instanceof Error ? error.message : 'Please try again.'}`)
+      console.error('Error submitting form:', error)
+      
+      const errorResponse = handleProductError(error)
+      const fieldErrors = mapErrorsToFields(errorResponse)
+      
+      if (Object.keys(fieldErrors).length > 0) {
+        setErrors(prev => ({ ...prev, ...fieldErrors }))
+      }
+      
+      setSubmitError(getErrorToastMessage(errorResponse))
     } finally {
       setLoading(false)
     }
+  }
+
+  const isFormValid = () => {
+    return formData.name.trim() && 
+           formData.price && 
+           Number(formData.price) > 0 &&
+           Object.values(errors).every(error => !error)
   }
 
   return (
@@ -123,40 +221,85 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Success Message */}
+          {successMessage && (
+            <Alert className="border-green-200 bg-green-50">
+              <AlertDescription className="text-green-800">
+                {successMessage}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Error Message */}
+          {submitError && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertDescription className="text-red-800">
+                {submitError}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Product Name */}
           <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
+            <label className="block text-sm font-medium mb-1">
+              Name <span className="text-red-500">*</span>
+            </label>
             <Input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => handleInputChange('name', e.target.value)}
               required
               disabled={loading}
+              className={errors.name ? 'border-red-500 focus:border-red-500' : ''}
+              placeholder="Enter product name"
             />
+            {errors.name && (
+              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+            )}
           </div>
 
+          {/* Price */}
           <div>
-            <label className="block text-sm font-medium mb-1">Price (IDR)</label>
+            <label className="block text-sm font-medium mb-1">
+              Price (IDR) <span className="text-red-500">*</span>
+            </label>
             <Input
               type="number"
               value={formData.price}
-              onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+              onChange={(e) => handleInputChange('price', e.target.value)}
               required
               disabled={loading}
               min="0"
-              step="1"
+              step="0.01"
+              className={errors.price ? 'border-red-500 focus:border-red-500' : ''}
+              placeholder="0.00"
             />
+            {errors.price && (
+              <p className="mt-1 text-sm text-red-600">{errors.price}</p>
+            )}
           </div>
 
+          {/* Description */}
           <div>
             <label className="block text-sm font-medium mb-1">Description</label>
             <Input
               type="text"
               value={formData.desc}
-              onChange={(e) => setFormData(prev => ({ ...prev, desc: e.target.value }))}
+              onChange={(e) => handleInputChange('desc', e.target.value)}
               disabled={loading}
+              className={errors.desc ? 'border-red-500 focus:border-red-500' : ''}
+              placeholder="Enter product description (optional)"
+              maxLength={500}
             />
+            {errors.desc && (
+              <p className="mt-1 text-sm text-red-600">{errors.desc}</p>
+            )}
+            <p className="mt-1 text-xs text-gray-500">
+              {formData.desc.length}/500 characters
+            </p>
           </div>
 
+          {/* Product Image */}
           <div>
             <label className="block text-sm font-medium mb-1">Product Image</label>
             <div className="space-y-2">
@@ -183,7 +326,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
                 }}
                 onError={(error) => {
                   console.error('Upload error:', error)
-                  alert('Upload failed. Please try again.')
+                  setSubmitError('Upload failed. Please try again.')
                 }}
                 onSuccess={(result: CloudinaryUploadWidgetResults) => {
                   console.log('Upload successful:', result)
@@ -225,6 +368,7 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
                 </Button>
               </div>
 
+              {/* Image Preview */}
               {formData.image && (
                 <div className="relative">
                   <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
@@ -249,25 +393,52 @@ export default function ProductForm({ product, isEdit = false }: ProductFormProp
                 </div>
               )}
 
+              {errors.image && (
+                <p className="text-sm text-red-600">{errors.image}</p>
+              )}
+
               <p className="text-xs text-gray-500">
                 Supported formats: JPG, PNG, GIF, WebP. Max size: 5MB
               </p>
             </div>
           </div>
 
+          {/* Action Buttons */}
           <div className="flex gap-2">
-            <Button type="submit" disabled={loading || uploading}>
-              {loading ? 'Saving...' : isEdit ? 'Update' : 'Create'}
+            <Button 
+              type="submit" 
+              disabled={loading || uploading || !isFormValid()}
+              className="flex-1"
+            >
+              {loading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {isEdit ? 'Updating...' : 'Creating...'}
+                </span>
+              ) : (
+                isEdit ? 'Update Product' : 'Create Product'
+              )}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => router.back()}
               disabled={loading}
+              className="flex-1"
             >
               Cancel
             </Button>
           </div>
+
+          {/* Form Status */}
+          {!isFormValid() && (
+            <p className="text-xs text-gray-500 text-center">
+              Please fill in all required fields with valid data
+            </p>
+          )}
         </form>
       </CardContent>
     </Card>
