@@ -263,8 +263,44 @@ interface UseImageUploadReturn {
   uploading: boolean
   uploadError: string
   uploadFile: (file: File) => Promise<void>
-  uploadFromWidget: (result: any) => void
+  uploadFromWidget: (result: CloudinaryWidgetResult) => void
   clearUploadError: () => void
+}
+
+// Proper Cloudinary types
+interface CloudinaryWidgetResultInfo {
+  secure_url: string
+  public_id: string
+  width: number
+  height: number
+  format: string
+  resource_type: string
+  created_at: string
+  bytes: number
+  type: string
+  url: string
+  [key: string]: unknown
+}
+
+interface CloudinaryWidgetResult {
+  event: 'success' | 'close' | 'error'
+  info: CloudinaryWidgetResultInfo | string
+}
+
+interface CloudinaryUploadResponse {
+  secure_url: string
+  public_id: string
+  width: number
+  height: number
+  format: string
+  resource_type: string
+  created_at: string
+  bytes: number
+  type: string
+  url: string
+  error?: {
+    message: string
+  }
 }
 
 export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUploadReturn {
@@ -314,10 +350,10 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
       })
 
       if (response.ok) {
-        const data: { secure_url: string } = await response.json()
+        const data: CloudinaryUploadResponse = await response.json()
         onSuccess?.(data.secure_url)
       } else {
-        const errorData = await response.json()
+        const errorData: CloudinaryUploadResponse = await response.json()
         throw new Error(errorData.error?.message || 'Upload failed')
       }
     } catch (error) {
@@ -330,24 +366,16 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
     }
   }, [cloudName, uploadPreset, onSuccess, onError])
 
-interface CloudinaryWidgetResultInfo {
-    secure_url?: string
-    [key: string]: unknown
-}
+  // Type guard function to check if info is CloudinaryWidgetResultInfo
+  const isCloudinaryWidgetResultInfo = (info: CloudinaryWidgetResultInfo | string): info is CloudinaryWidgetResultInfo => {
+    return typeof info === 'object' && info !== null && 'secure_url' in info
+  }
 
-interface CloudinaryWidgetResult {
-    info?: CloudinaryWidgetResultInfo | string
-    [key: string]: unknown
-}
-
-const uploadFromWidget = useCallback((result: CloudinaryWidgetResult) => {
-    if (result.info && typeof result.info !== 'string') {
-        const url = result.info.secure_url
-        if (url) {
-            onSuccess?.(url)
-        }
+  const uploadFromWidget = useCallback((result: CloudinaryWidgetResult) => {
+    if (result.event === 'success' && isCloudinaryWidgetResultInfo(result.info)) {
+      onSuccess?.(result.info.secure_url)
     }
-}, [onSuccess])
+  }, [onSuccess])
 
   return {
     uploading,
