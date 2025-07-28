@@ -1,7 +1,6 @@
 import { MenuItem } from "@/components/menuItem";
 import { ChevronDown, Clock, Coffee, MapPin } from "lucide-react";
 import Image from "next/image";
-import {prisma }from "@/lib/prisma"
 import { CartButton } from "@/components/cartButton";
 import Link from "next/link";
 import { getProducts } from "@/lib/action/product";
