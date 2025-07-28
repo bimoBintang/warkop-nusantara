@@ -5,12 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import DeleteProductButton from '@/components/deleteProductButton'
 import Image from 'next/image'
-
-async function getProducts() {
-  return await prisma.product.findMany({
-    orderBy: { createdAt: 'desc' }
-  })
-}
+import { getProducts } from '@/lib/action/product'
 
 async function getUsers() {
   return await prisma.user.findMany({

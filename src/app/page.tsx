@@ -4,18 +4,10 @@ import Image from "next/image";
 import {prisma }from "@/lib/prisma"
 import { CartButton } from "@/components/cartButton";
 import Link from "next/link";
+import { getProducts } from "@/lib/action/product";
 
 export default async function Home() {
-
-  const product = await prisma.product.findMany({
-    select: {
-      id: true,
-      image: true,
-      name: true,
-      price: true,
-      desc: true
-    }
-  });
+  const product = await getProducts();
   return (
     <main>
       <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden">
