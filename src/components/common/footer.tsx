@@ -11,7 +11,7 @@ export const Footer = ()=> {
                 <span className="text-xl font-bold">Warkop Bangboy</span>
             </div>
             <p className="text-amber-200">
-                Email: warkopbangboy47@gmai.com
+                Email: warkopbangboy47@gmail.com
             </p>
             <p className="text-amber-200">
                 No telp: 0858449892754

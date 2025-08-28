@@ -296,7 +296,7 @@ export default function Checkout({ onSubmitOrder, existingOrder }: CheckoutProps
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nomor meja*</label>
                   <textarea
                     name="address"
                     value={customerInfo.address}
@@ -304,7 +304,7 @@ export default function Checkout({ onSubmitOrder, existingOrder }: CheckoutProps
                     required
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="Masukkan alamat lengkap"
+                    placeholder="Masukkan nomor meja"
                   />
                 </div>
 

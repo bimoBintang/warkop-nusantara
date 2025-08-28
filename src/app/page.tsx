@@ -79,7 +79,7 @@ export default async function Home() {
               </p>
               <div className="flex items-center space-x-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-600">6+</div>
+                  <div className="text-3xl font-bold text-amber-600">7+</div>
                   <div className="text-gray-600">Tahun Berpengalaman</div>
                 </div>
                 <div className="text-center">
